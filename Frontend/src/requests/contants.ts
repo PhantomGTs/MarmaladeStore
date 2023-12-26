@@ -1,0 +1,1 @@
+export const ADDRESS_SERVER = "http://localhost:2406/";
