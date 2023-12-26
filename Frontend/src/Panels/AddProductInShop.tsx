@@ -41,7 +41,8 @@ export const AddProductInShop = () => {
                     : item
             )
         )
-    }, [listProducts]);
+    }, [listProducts]); //test it
+
 
     const onAddProductsInShop = useCallback(() => {
         if (!shop || !listProducts.length || !checkedProducts.length) {
