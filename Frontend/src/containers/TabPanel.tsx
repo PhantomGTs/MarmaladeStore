@@ -82,7 +82,7 @@ export default function VerticalTabs({ value, setValue }: { value: number, setVa
         <Tab label="Добавить товары в точку" {...a11yProps(3)} />
         <Tab label="Найти самый дешевый товар в точке" {...a11yProps(4)} />
         <Tab label="Поиск товаров на сумму" {...a11yProps(5)} />
-        <Tab label="Купить партию товаров" {...a11yProps(6)} />
+        <Tab label="Заказать партию товаров" {...a11yProps(6)} />
         <Tab label="Найти наименьшую сумму товаров" {...a11yProps(7)} />
       </Tabs>
       <TabPanel value={value} index={0}>
