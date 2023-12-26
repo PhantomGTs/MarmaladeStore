@@ -10,8 +10,9 @@ import { SelectShop } from "../components/SelectShop";
 export const AddProductInShop = () => {
     const { products, setProducts, setShops } = useShopsContext();
     const [shop, setShop] = useState<number | undefined>();
-
     const [listProducts, setListProducts] = useState<IProduct[]>([]);
+    const [checkedProducts, setCheckedProducts] = useState<number[]>([]);
+    const [deleteButtonsState, setDeleteButtonsState] = useState<{ [key: number]: boolean }>({});
 
     useEffect(() => {
         if (products.length) {
@@ -23,8 +24,6 @@ export const AddProductInShop = () => {
             setListProducts(res.map(item => ({ ...item })))
         })
     }, [products, setProducts])
-
-    const [checkedProducts, setCheckedProducts] = useState<number[]>([]);
 
     const onChangeChecked = useCallback((id: number) => {
         if (checkedProducts.indexOf(id) > -1) {
@@ -42,7 +41,7 @@ export const AddProductInShop = () => {
                     : item
             )
         )
-    }, [listProducts])
+    }, [listProducts]);
 
     const onAddProductsInShop = useCallback(() => {
         if (!shop || !listProducts.length || !checkedProducts.length) {
@@ -69,12 +68,19 @@ export const AddProductInShop = () => {
     }, [listProducts, checkedProducts, shop, setShops]);
 
     const onDeleteCheckedProducts = useCallback(() => {
-        // Функция для удаления отмеченных товаров из списка
         setListProducts(prevState =>
             prevState.filter(item => checkedProducts.indexOf(item.ID) === -1)
         );
-        setCheckedProducts([]); // Сброс отмеченных товаров
+        setDeleteButtonsState({});
+        setCheckedProducts([]);
     }, [checkedProducts]);
+
+    const onToggleDeleteButton = useCallback((productId: number) => {
+        setDeleteButtonsState(prevState => ({
+            ...prevState,
+            [productId]: !prevState[productId],
+        }));
+    }, []);
 
     return (
         <Stack spacing={2}>
@@ -84,57 +90,58 @@ export const AddProductInShop = () => {
             <TableContainer component={Paper}>
                 <Table size="small" aria-label="a dense table">
                     <TableBody>
-                        {
-                            listProducts.map((pr) =>
-                                <TableRow
-                                    key={pr.ID}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={checkedProducts.indexOf(pr.ID) > -1}
-                                            onChange={() => onChangeChecked(pr.ID)}
-                                            inputProps={{ 'aria-label': 'controlled' }}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{pr.Name}</TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            size="small"
-                                            type="number"
-                                            label="Количество *"
-                                            value={pr.Count ?? ""}
-                                            onChange={(e) => onChangeItemProduct(pr.ID, e.target.value ? +e.target.value : undefined, pr.Price)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            size="small"
-                                            type="number"
-                                            label="Цена"
-                                            value={pr.Price ?? ""}
-                                            onChange={(e) => onChangeItemProduct(pr.ID, pr.Count, e.target.value ? +e.target.value : undefined)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => onDeleteCheckedProducts()}
-                                            disabled={checkedProducts.length === 0}
-                                            sx={{ backgroundColor: checkedProducts.length > 0 ? 'red' : 'grey', color: 'white' }}
-                                        >
-                                            Удалить
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        }
+                        {listProducts.map((pr) => (
+                            <TableRow
+                                key={pr.ID}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                className={deleteButtonsState[pr.ID] ? 'selected' : ''}
+                            >
+                                <TableCell>
+                                    <Checkbox
+                                        checked={checkedProducts.indexOf(pr.ID) > -1}
+                                        onChange={() => {
+                                            onChangeChecked(pr.ID);
+                                            onToggleDeleteButton(pr.ID);
+                                        }}
+                                        inputProps={{ 'aria-label': 'controlled' }}
+                                    />
+                                </TableCell>
+                                <TableCell>{pr.Name}</TableCell>
+                                <TableCell>
+                                    <TextField
+                                        size="small"
+                                        type="number"
+                                        label="Количество *"
+                                        value={pr.Count ?? ""}
+                                        onChange={(e) => onChangeItemProduct(pr.ID, e.target.value ? +e.target.value : undefined, pr.Price)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField
+                                        size="small"
+                                        type="number"
+                                        label="Цена"
+                                        value={pr.Price ?? ""}
+                                        onChange={(e) => onChangeItemProduct(pr.ID, pr.Count, e.target.value ? +e.target.value : undefined)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => onDeleteCheckedProducts()}
+                                        disabled={!deleteButtonsState[pr.ID]}
+                                        sx={{ backgroundColor: deleteButtonsState[pr.ID] ? 'red' : 'grey', color: 'white' }}
+                                    >
+                                        Удалить
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
-
             </TableContainer>
-            <Button variant="contained" onClick={onAddProductsInShop} disabled={!shop || !listProducts.length || !checkedProducts.length} >Добавить товары</Button>
 
+            <Button variant="contained" onClick={onAddProductsInShop} disabled={!shop || !listProducts.length || !checkedProducts.length} >Добавить товары</Button>
         </Stack>
-    )
-}
+    );
+};
